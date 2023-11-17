@@ -88,7 +88,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         AtomicInteger idx = new AtomicInteger(0);
         CommandExecutor cmd = findCommand(parts, idx);
         String[] args = new String[parts.length - idx.get()];
-        System.arraycopy(args, idx.get(), args, 0, args.length);
+        System.arraycopy(parts, idx.get(), args, 0, args.length);
         try {
             return cmd.tabComplete0(sender, args);
         } catch (Exception e) {

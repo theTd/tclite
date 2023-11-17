@@ -27,6 +27,7 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT")
 }
 
 tasks.test {

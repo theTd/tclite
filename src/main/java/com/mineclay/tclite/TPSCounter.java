@@ -16,13 +16,15 @@ public class TPSCounter implements Loader.Loadable {
 
     public double getTPS(int windowSecs) {
         long now = System.currentTimeMillis();
-        long start = now - windowSecs * 1000L;
-        int count = 0;
-        for (long tick : tickDeque) {
-            if (tick >= start) count++;
-            else break;
+        long lim = now - windowSecs * 1000L;
+        int tickCount = 0;
+        long lastTick = now;
+        for (Long l : tickDeque) {
+            if (l < lim) break;
+            tickCount++;
+            lastTick = l;
         }
-        return count / (double) windowSecs;
+        return tickCount / ((now - lastTick) / 1000.0);
     }
 
     BukkitTask task;
@@ -38,11 +40,12 @@ public class TPSCounter implements Loader.Loadable {
     }
 
     private final static int BUFFER_SIZE = 20 * 60 * 15;
-    private final Deque<Long> tickDeque = new ArrayDeque<>(BUFFER_SIZE);
+    protected final Deque<Long> tickDeque = new ArrayDeque<>(BUFFER_SIZE);
 
     private void update() {
-        if (tickDeque.size() >= BUFFER_SIZE)
-            tickDeque.removeFirst();
-        tickDeque.addLast(System.currentTimeMillis());
+        if (!tickDeque.offerFirst(System.currentTimeMillis())) {
+            tickDeque.removeLast();
+            tickDeque.addFirst(System.currentTimeMillis());
+        }
     }
 }
