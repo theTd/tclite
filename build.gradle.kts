@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.mineclay"
-version = "1.0.0-SNAPSHOT"
+version = "1.1.0-SNAPSHOT"
 
 java {
     withSourcesJar()
@@ -28,6 +28,10 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT")
+    testCompileOnly("org.jetbrains:annotations:22.0.0")
+    // mockito
+    testImplementation("org.mockito:mockito-inline:3.12.4")
+    testImplementation("org.mockito:mockito-junit-jupiter:3.12.4")
 }
 
 tasks.test {
