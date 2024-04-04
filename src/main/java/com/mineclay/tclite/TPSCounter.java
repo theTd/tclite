@@ -40,12 +40,10 @@ public class TPSCounter implements Loader.Loadable {
     }
 
     private final static int BUFFER_SIZE = 20 * 60 * 15;
-    protected final Deque<Long> tickDeque = new ArrayDeque<>(BUFFER_SIZE);
+    protected final Deque<Long> tickDeque = new ArrayDeque<>();
 
     private void update() {
-        if (!tickDeque.offerFirst(System.currentTimeMillis())) {
-            tickDeque.removeLast();
-            tickDeque.addFirst(System.currentTimeMillis());
-        }
+        tickDeque.addFirst(System.currentTimeMillis());
+        if (tickDeque.size() > BUFFER_SIZE) tickDeque.removeLast();
     }
 }
