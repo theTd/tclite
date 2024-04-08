@@ -49,6 +49,8 @@ public class CommandDemoTest {
         }).when(sender).sendMessage(anyString());
         lenient().when(sender.hasPermission(anyString())).thenReturn(true);
 
+        call("demo parser-test https://www.google.com");
+
         call("demo");
         call("demo subCommand");
         call("demo 2");

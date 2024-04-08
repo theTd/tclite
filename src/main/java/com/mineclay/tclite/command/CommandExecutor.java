@@ -79,79 +79,11 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         return requireArg(parser, null);
     }
 
-    private class RequiredArgHandler<T> implements ArgHandler<T>, ArgTokenR<T> {
-
-        public RequiredArgHandler(ArgParser<T> parser, String name) {
-            this.name = name != null ? name : parser.getName() != null ? parser.getName() : "";
-            this.parser = parser::parse;
-            this.completor = parser::complete;
-        }
-
-        final String name;
-        final InlineParser<T> parser;
-        InlineCompletor completor;
-        String description;
-
-        @Override
-        public @NotNull <U> ArgTokenO<U> parser(@NotNull InlineParser<U> parser) {
-            RequiredArgHandler<T> prev = this;
-            return new OptionalArgHandler<U>(parser, null, name) {
-                {
-                    this.completor = prev.completor;
-                    this.description = prev.description;
-                }
-            };
-        }
-
-        @Override
-        public @NotNull ArgTokenR<T> completor(@NotNull InlineCompletor completor) {
-            this.completor = completor;
-            return this;
-        }
-
-        @Override
-        public @NotNull ArgTokenR<T> description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        @Override
-        public @NotNull String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean isOptional() {
-            return false;
-        }
-
-        @Override
-        public @Nullable T getDefaultValue() {
-            return null;
-        }
-
-        @Override
-        public @NotNull T parse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
-            return parser.parse(ctx, arg);
-        }
-
-        @Override
-        public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
-            return completor.complete(ctx, arg);
-        }
-
-        @Override
-        public @Nullable String getDescription() {
-            return description;
-        }
-    }
-
     protected <T> @NotNull ArgTokenR<T> requireArg(@NotNull ArgParser<T> parser, @Nullable String name) {
         RequiredArgHandler<T> handler = new RequiredArgHandler<>(parser, name);
         args.add(handler);
         return handler;
     }
-
 
     protected @NotNull ArgTokenO<String> optionalArg() {
         return optionalArg(ArgParser.STRING, "");
@@ -165,49 +97,108 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         return optionalArg(parser, "");
     }
 
-    private static class OptionalArgHandler<T> implements ArgHandler<T>, ArgTokenO<T> {
-        @NotNull
-        final String name;
-        @NotNull InlineParser<T> parser;
-        @Nullable InlineCompletor completor;
-        @Nullable T defaultValue;
-        @Nullable String description;
-
+    private static class OptionalArgHandler<T> extends RawArgHandler<T> implements ArgTokenO<T> {
         public OptionalArgHandler(ArgParser<T> parser, String name) {
-            this.parser = parser::parse;
-            this.name = name != null ? name : parser.getName() != null ? parser.getName() : "";
-            completor = parser::complete;
+            super(parser, name, true);
         }
 
-        private OptionalArgHandler(@NotNull InlineParser<T> parser, @Nullable InlineCompletor completor, String name) {
-            this.parser = parser;
-            this.completor = completor;
-            this.name = name == null ? "" : name;
+        @Override
+        public ArgTokenO<T> defaultsTo(@NotNull T defaultValue) {
+            return (ArgTokenO<T>) super.defaultsTo(defaultValue);
         }
 
         @Override
         public @NotNull <U> ArgTokenO<U> parser(@NotNull InlineParser<U> parser) {
+            return (ArgTokenO<U>) super.parser(parser);
+        }
+
+        @Override
+        public @NotNull ArgTokenO<T> completor(@NotNull InlineCompletor completor) {
+            return (ArgTokenO<T>) super.completor(completor);
+        }
+
+        @Override
+        public @NotNull ArgTokenO<T> description(@Nullable String description) {
+            return (ArgTokenO<T>) super.description(description);
+        }
+    }
+
+    private static class RequiredArgHandler<T> extends RawArgHandler<T> implements ArgTokenO<T> {
+        public RequiredArgHandler(ArgParser<T> parser, String name) {
+            super(parser, name, false);
+        }
+
+        @Override
+        public ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
+            return (ArgTokenR<T>) super.defaultsTo(defaultValue);
+        }
+
+        @Override
+        public @NotNull <U> ArgTokenO<U> parser(@NotNull InlineParser<U> parser) {
+            return (ArgTokenO<U>) super.parser(parser);
+        }
+
+        @Override
+        public @NotNull ArgTokenO<T> completor(@NotNull InlineCompletor completor) {
+            return (ArgTokenO<T>) super.completor(completor);
+        }
+
+        @Override
+        public @NotNull ArgTokenO<T> description(@Nullable String description) {
+            return (ArgTokenO<T>) super.description(description);
+        }
+    }
+
+    private static class RawArgHandler<T> implements ArgHandler<T>, ArgToken<T> {
+        @NotNull
+        final String name;
+        @NotNull
+        InlineParser<T> parser;
+        @Nullable
+        InlineCompletor completor;
+        @Nullable
+        T defaultValue;
+        @Nullable
+        String description;
+
+        boolean optional;
+
+        public RawArgHandler(ArgParser<T> parser, String name, boolean optional) {
+            this.parser = parser::parse;
+            this.name = name != null ? name : parser.getName() != null ? parser.getName() : "";
+            completor = parser::complete;
+            this.optional = optional;
+        }
+
+        private RawArgHandler(@NotNull InlineParser<T> parser, @Nullable InlineCompletor completor, String name, boolean optional) {
+            this.parser = parser;
+            this.completor = completor;
+            this.name = name == null ? "" : name;
+            this.optional = optional;
+        }
+
+        @Override
+        public @NotNull <U> ArgToken<U> parser(@NotNull InlineParser<U> parser) {
             defaultValue = null;
             //noinspection unchecked
-            OptionalArgHandler<U> h = (OptionalArgHandler<U>) this;
+            RawArgHandler<U> h = (RawArgHandler<U>) this;
             h.parser = parser;
             return h;
         }
 
         @Override
-        public @NotNull ArgTokenO<T> completor(@NotNull InlineCompletor completor) {
+        public @NotNull ArgToken<T> completor(@NotNull InlineCompletor completor) {
             this.completor = completor;
             return this;
         }
 
         @Override
-        public @NotNull ArgTokenO<T> description(@Nullable String description) {
+        public @NotNull ArgToken<T> description(@Nullable String description) {
             this.description = description;
             return this;
         }
 
-        @Override
-        public ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
+        public ArgToken<T> defaultsTo(@NotNull T defaultValue) {
             this.defaultValue = defaultValue;
             return this;
         }
@@ -219,7 +210,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
         @Override
         public boolean isOptional() {
-            return true;
+            return optional;
         }
 
         @Override

@@ -4,7 +4,8 @@ import com.mineclay.tclite.command.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -22,6 +23,23 @@ public class CommandDemo extends CommandExecutor {
 
             }
         });
+
+        new CommandExecutor(this, "parser-test") {
+            final ArgTokenR<URL> url = requireArg("url").parser((ctx, arg) -> {
+                try {
+                    return new URL(arg);
+                } catch (MalformedURLException e) {
+                    throw error(e.getMessage());
+                }
+            });
+
+            @Override
+            public void execute(@NotNull CommandContext ctx) throws CommandSignal {
+                URL url = ctx.valueOf(this.url);
+                ctx.getSender().sendMessage(url.toString());
+            }
+        };
+
         new CommandExecutor(this, "sub-command") {
 
             final ArgTokenR<Integer> page = optionalArg(ArgParser.INTEGER, "page").parser((ctx, arg) -> {
