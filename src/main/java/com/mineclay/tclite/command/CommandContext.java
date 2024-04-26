@@ -20,6 +20,10 @@ public interface CommandContext {
 
     <T> @Nullable T valueOf(@NotNull ArgToken<T> token);
 
+    default <T> @Nullable T valueOf(@NotNull ArgTokenO<T> token) {
+        return valueOf(((ArgToken<T>) token));
+    }
+
     <T> @NotNull T valueOf(@NotNull ArgTokenR<T> token);
 
     <T> @Nullable T valueOf(@NotNull String arg);

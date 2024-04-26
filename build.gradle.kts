@@ -1,10 +1,10 @@
 plugins {
-    java
+    `java-library`
     `maven-publish`
 }
 
 group = "com.mineclay"
-version = "1.3.0-SNAPSHOT"
+version = "1.3.1-SNAPSHOT"
 
 java {
     withSourcesJar()
@@ -23,7 +23,7 @@ dependencies {
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
     compileOnly("org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT")
 
-    compileOnly("org.jetbrains:annotations:22.0.0")
+    api("org.jetbrains:annotations:22.0.0")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
