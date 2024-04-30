@@ -3,7 +3,10 @@ package com.mineclay.tclite.command;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.bukkit.ChatColor;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -279,7 +282,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
     public abstract void execute(@NotNull CommandContext ctx) throws CommandSignal;
 
-    private static CommandContext createCtx(CommandSender sender, String label, String[] parts, LinkedList<String> args, Map<ArgHandler<?>, Object> resolve) {
+    private static CommandContext createCtx(Plugin plugin, CommandSender sender, String label, String[] parts, LinkedList<String> args, Map<ArgHandler<?>, Object> resolve) {
         return new CommandContext() {
             private Player player;
 
@@ -287,6 +290,11 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 if (sender instanceof Player) {
                     player = (Player) sender;
                 }
+            }
+
+            @Override
+            public @NotNull Plugin getPlugin() {
+                return plugin;
             }
 
             @Override
@@ -355,7 +363,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
         LinkedList<String> args = new LinkedList<>(Arrays.asList(parts).subList(idx.get(), parts.length));
         Map<ArgHandler<?>, Object> resolve = new LinkedHashMap<>();
-        CommandContext ctx = createCtx(sender, label, parts, args, resolve);
+        CommandContext ctx = createCtx(((PluginCommand) command).getPlugin(), sender, label, parts, args, resolve);
 
         try {
             for (ArgHandler<?> arg : cmd.args) {
@@ -441,7 +449,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         if (args.isEmpty()) return Collections.emptyList();
 
         Map<ArgHandler<?>, Object> resolve = new LinkedHashMap<>();
-        CommandContext ctx = createCtx(sender, label, parts, args, resolve);
+        CommandContext ctx = createCtx(((PluginCommand) command).getPlugin(), sender, label, parts, args, resolve);
 
         try {
             Set<String> result = new LinkedHashSet<>();

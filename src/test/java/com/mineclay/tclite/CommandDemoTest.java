@@ -1,6 +1,7 @@
 package com.mineclay.tclite;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,13 +20,16 @@ public class CommandDemoTest {
 
     @Mock
     CommandSender sender;
+    @Mock
+    PluginCommand cmd;
     CommandDemo command = new CommandDemo();
 
     void call(String commandLine) {
         String[] s = commandLine.split(" ");
         String label = s[0];
         String[] args = Arrays.copyOfRange(s, 1, s.length);
-        command.onCommand(sender, null, label, args);
+
+        command.onCommand(sender, cmd, label, args);
     }
 
     void complete(String commandLine) {
@@ -33,7 +37,7 @@ public class CommandDemoTest {
         String label = s[0];
         String[] args = Arrays.copyOfRange(s, 1, s.length);
 
-        List<String> strings = command.onTabComplete(sender, null, label, args);
+        List<String> strings = command.onTabComplete(sender, cmd, label, args);
         System.out.println("strings = " + strings);
     }
 
@@ -41,6 +45,8 @@ public class CommandDemoTest {
     public void test() {
 
         MockitoAnnotations.openMocks(this);
+
+        lenient().when(cmd.getPlugin()).thenReturn(null);
 
         lenient().when(sender.getName()).thenReturn("TestPlayer");
         lenient().doAnswer(invocation -> {

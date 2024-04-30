@@ -1,3 +1,5 @@
+import java.io.FileFilter
+
 pluginManagement {
     repositories {
         mavenCentral()
@@ -10,3 +12,8 @@ plugins {
 }
 
 rootProject.name = "tclite"
+
+File("").resolve("nativeport").listFiles(FileFilter { it.isDirectory })?.forEach {
+    include(":nativeport:${it.name}")
+    project(":nativeport:${it.name}").projectDir = File("nativeport").resolve(it.name)
+}

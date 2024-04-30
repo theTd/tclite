@@ -1,27 +1,43 @@
+import groovy.util.Node
+import groovy.util.NodeList
+
 plugins {
     `java-library`
     `maven-publish`
+
+    // shadowJar
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "com.mineclay"
-version = "1.3.1-SNAPSHOT"
+version = "1.4.0-SNAPSHOT"
 
-java {
-    withSourcesJar()
-    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+allprojects {
+    plugins.apply("java-library")
+    java {
+        withSourcesJar()
+        toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+    }
+    tasks.compileJava {
+        options.encoding = "UTF-8"
+    }
 }
 
 repositories {
-    maven {
-        url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    }
-    maven { url = uri("https://repo.dmulloy2.net/repository/public/") }
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://repo.dmulloy2.net/repository/public/")
     mavenCentral()
 }
 
 dependencies {
+    implementation(project(":nativeport:api"))
+    implementation(project(":nativeport:v1_12_R2"))
+    implementation(project(":nativeport:v1_18_R2"))
+
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
-    compileOnly("org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT")
+
+    compileOnly("org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT")
 
     api("org.jetbrains:annotations:22.0.0")
 
@@ -38,10 +54,32 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.shadowJar {
+    archiveClassifier.set("")
+    dependencies {
+        exclude(dependency("org.jetbrains:"))
+    }
+}
+
+tasks.assemble {
+    dependsOn(tasks.shadowJar)
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
+            pom {
+                withXml {
+                    val getGroupId: (Any) -> String = {
+                        ((((it as Node).get("groupId") as NodeList).first() as Node).value() as NodeList).first() as String
+                    }
+                    val dependencies = (asNode().get("dependencies") as NodeList).first() as Node
+                    dependencies.children().removeIf {
+                        getGroupId(it) == "tclite.nativeport"
+                    }
+                }
+            }
         }
     }
     repositories {

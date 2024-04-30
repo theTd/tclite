@@ -2,10 +2,13 @@ package com.mineclay.tclite.command;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface CommandContext {
+    @NotNull Plugin getPlugin();
+
     @NotNull CommandSender getSender();
 
     @Nullable Player getPlayer();
