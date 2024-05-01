@@ -5,6 +5,9 @@ plugins {
     `java-library`
     `maven-publish`
 
+    // lombok
+    id("io.freefair.lombok") version "6.2.0"
+
     // shadowJar
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
