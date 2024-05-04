@@ -7,7 +7,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface CommandContext {
+public interface CommandContext extends CommandSender {
     @NotNull Plugin getPlugin();
 
     @NotNull Command getCommand();

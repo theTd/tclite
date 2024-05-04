@@ -3,8 +3,12 @@ package com.mineclay.tclite.command;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.bukkit.ChatColor;
+import org.bukkit.Server;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -289,6 +293,99 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
     private static CommandContext createCtx(PluginCommand cmd, CommandSender sender, String label, String[] parts, LinkedList<String> args, Map<ArgHandler<?>, Object> resolve) {
         return new CommandContext() {
+            // region CommandSender delegate
+            @Override
+            public boolean isOp() {
+                return sender.isOp();
+            }
+
+            @Override
+            public void setOp(boolean op) {
+                sender.setOp(op);
+            }
+
+            @Override
+            public boolean isPermissionSet(String permission) {
+                return sender.isPermissionSet(permission);
+            }
+
+            @Override
+            public boolean isPermissionSet(Permission permission) {
+                return sender.isPermissionSet(permission);
+            }
+
+            @Override
+            public boolean hasPermission(String permission) {
+                return sender.hasPermission(permission);
+            }
+
+            @Override
+            public boolean hasPermission(Permission permission) {
+                return sender.hasPermission(permission);
+            }
+
+            @Override
+            public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
+                return sender.addAttachment(plugin, name, value);
+            }
+
+            @Override
+            public PermissionAttachment addAttachment(Plugin plugin) {
+                return sender.addAttachment(plugin);
+            }
+
+            @Override
+            public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
+                return sender.addAttachment(plugin, name, value, ticks);
+            }
+
+            @Override
+            public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
+                return sender.addAttachment(plugin, ticks);
+            }
+
+            @Override
+            public void removeAttachment(PermissionAttachment attachment) {
+                sender.removeAttachment(attachment);
+            }
+
+            @Override
+            public void recalculatePermissions() {
+                sender.recalculatePermissions();
+            }
+
+            @Override
+            public Set<PermissionAttachmentInfo> getEffectivePermissions() {
+                return sender.getEffectivePermissions();
+            }
+
+            @Override
+            public void sendMessage(String message) {
+                sender.sendMessage(message);
+            }
+
+            @Override
+            public void sendMessage(String[] messages) {
+                sender.sendMessage(messages);
+            }
+
+            @Override
+            public Server getServer() {
+                return sender.getServer();
+            }
+
+            @Override
+            public String getName() {
+                return sender.getName();
+            }
+
+            @Override
+            public Spigot spigot() {
+                return sender.spigot();
+            }
+
+            // endregion
+
             private Player player;
 
             {
