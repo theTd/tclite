@@ -257,9 +257,6 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
     }
 
     protected CommandExecutor(@Nullable CommandExecutor parent, @NotNull String label) {
-        if (label.isEmpty())
-            throw new IllegalArgumentException("invalid command label");
-
         this.parent = parent;
         this.label = label;
         if (this.parent != null) {
@@ -620,6 +617,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
     }
 
     public void register(@NotNull JavaPlugin plugin) {
+        if (label.isEmpty()) throw new IllegalArgumentException("label is empty");
         try {
             PluginCommand cmd = plugin.getCommand(label);
             if (cmd == null) {
