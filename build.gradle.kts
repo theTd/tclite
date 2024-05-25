@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.mineclay"
-version = "1.4.0-SNAPSHOT"
+version = "1.4.1-SNAPSHOT"
 
 allprojects {
     plugins.apply("java-library")

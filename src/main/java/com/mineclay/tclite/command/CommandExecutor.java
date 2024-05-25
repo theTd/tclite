@@ -2,6 +2,7 @@ package com.mineclay.tclite.command;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.*;
@@ -18,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -115,8 +117,13 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
-        public ArgTokenO<T> defaultsTo(@NotNull T defaultValue) {
-            return (ArgTokenO<T>) super.defaultsTo(defaultValue);
+        public @NotNull ArgTokenO<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+            return (ArgTokenO<T>) super.defaultsTo(defaultValueSupplier);
+        }
+
+        @Override
+        public @NotNull ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
+            return (ArgTokenR<T>) super.defaultsTo(() -> defaultValue);
         }
 
         @Override
@@ -141,8 +148,13 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
-        public ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
-            return (ArgTokenR<T>) super.defaultsTo(defaultValue);
+        public @NotNull ArgTokenO<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+            return (ArgTokenO<T>) super.defaultsTo(defaultValueSupplier);
+        }
+
+        @Override
+        public @NotNull ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
+            return (ArgTokenR<T>) super.defaultsTo(() -> defaultValue);
         }
 
         @Override
@@ -161,6 +173,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
     }
 
+    @Getter
     private static class RawArgHandler<T> implements ArgHandler<T>, ArgToken<T> {
         @NotNull
         final String name;
@@ -169,7 +182,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         @Nullable
         InlineCompletor completor;
         @Nullable
-        T defaultValue;
+        Supplier<T> defaultValueSupplier;
         @Nullable
         String description;
 
@@ -191,7 +204,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
         @Override
         public @NotNull <U> ArgToken<U> parser(@NotNull InlineParser<U> parser) {
-            defaultValue = null;
+            defaultValueSupplier = null;
             //noinspection unchecked
             RawArgHandler<U> h = (RawArgHandler<U>) this;
             h.parser = parser;
@@ -210,24 +223,9 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
             return this;
         }
 
-        public ArgToken<T> defaultsTo(@NotNull T defaultValue) {
-            this.defaultValue = defaultValue;
+        public ArgToken<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+            this.defaultValueSupplier = defaultValueSupplier;
             return this;
-        }
-
-        @Override
-        public @NotNull String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean isOptional() {
-            return optional;
-        }
-
-        @Override
-        public @Nullable T getDefaultValue() {
-            return defaultValue;
         }
 
         @Override
@@ -238,11 +236,6 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             return completor == null ? Collections.emptyList() : completor.complete(ctx, arg);
-        }
-
-        @Override
-        public @Nullable String getDescription() {
-            return description;
         }
     }
 
@@ -479,7 +472,8 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 }
                 if (toParse == null) {
                     if (arg.isOptional()) {
-                        resolve.put(arg, arg.getDefaultValue());
+                        Supplier<?> defaultValueSupplier = arg.getDefaultValueSupplier();
+                        resolve.put(arg, defaultValueSupplier == null ? null : defaultValueSupplier.get());
                     } else {
                         throw escapeToHelpMessage();
                     }

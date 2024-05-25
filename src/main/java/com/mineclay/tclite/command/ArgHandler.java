@@ -3,12 +3,15 @@ package com.mineclay.tclite.command;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Supplier;
+
 interface ArgHandler<T> {
     @NotNull String getName();
 
     boolean isOptional();
 
-    @Nullable T getDefaultValue();
+    @Nullable
+    Supplier<T> getDefaultValueSupplier();
 
     @NotNull T parse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal;
 
