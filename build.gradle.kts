@@ -1,6 +1,3 @@
-import groovy.util.Node
-import groovy.util.NodeList
-
 plugins {
     `java-library`
     `maven-publish`
@@ -13,16 +10,40 @@ plugins {
 }
 
 group = "com.mineclay"
-version = "1.4.1-SNAPSHOT"
+
+val clayUsername: String by project
+val clayPassword: String by project
 
 allprojects {
     plugins.apply("java-library")
+    plugins.apply("maven-publish")
+
+    if (path != ":") {
+        group = "com.mineclay.tclite${path.split(":").dropLast(1).joinToString(".")}"
+    }
+
     java {
         withSourcesJar()
         toolchain.languageVersion.set(JavaLanguageVersion.of(8))
     }
     tasks.compileJava {
         options.encoding = "UTF-8"
+    }
+    publishing {
+        publications {
+            create<MavenPublication>("default") {
+                from(components["java"])
+            }
+        }
+        repositories {
+            val snapshot = version.toString().endsWith("-SNAPSHOT")
+            maven("https://maven.mineclay.com/repository/zhua-${if (snapshot) "snapshot" else "release"}/") {
+                credentials {
+                    username = clayUsername
+                    password = clayPassword
+                }
+            }
+        }
     }
 }
 
@@ -34,15 +55,16 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":nativeport:api"))
-    implementation(project(":nativeport:v1_12_R2"))
-    implementation(project(":nativeport:v1_18_R2"))
+    implementation(project(":nativeport-api"))
+    implementation(project(":nativeport-v1_12_R2"))
+    implementation(project(":nativeport-v1_18_R2"))
 
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
 
     compileOnly("org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT")
 
     api("org.jetbrains:annotations:22.0.0")
+    api("com.google.code.findbugs:jsr305:3.0.2")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -66,36 +88,4 @@ tasks.shadowJar {
 
 tasks.assemble {
     dependsOn(tasks.shadowJar)
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            pom {
-                withXml {
-                    val getGroupId: (Any) -> String = {
-                        ((((it as Node).get("groupId") as NodeList).first() as Node).value() as NodeList).first() as String
-                    }
-                    val dependencies = (asNode().get("dependencies") as NodeList).first() as Node
-                    dependencies.children().removeIf {
-                        getGroupId(it) == "tclite.nativeport"
-                    }
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            url = uri(
-                "https://maven.mineclay.com/repository/zhua-${
-                    if (version.toString().endsWith("SNAPSHOT")) "snapshot" else "release"
-                }/"
-            )
-            credentials {
-                username = findProperty("clayUsername").toString()
-                password = findProperty("clayPassword").toString()
-            }
-        }
-    }
 }

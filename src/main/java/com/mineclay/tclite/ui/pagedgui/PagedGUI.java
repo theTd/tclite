@@ -1,8 +1,8 @@
 package com.mineclay.tclite.ui.pagedgui;
 
+import com.mineclay.tclite.XMaterial;
 import com.mineclay.tclite.ui.*;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
@@ -101,7 +101,7 @@ public abstract class PagedGUI<T> extends AbstractGUI {
             if (page <= 1) {
                 setItem(InventoryUtils.genBlankButton());
             } else {
-                ItemStack display = new ItemStack(Material.DIODE);
+                ItemStack display = XMaterial.REPEATER.parseItem();
                 ItemMeta meta = display.getItemMeta();
                 meta.setDisplayName(ChatColor.GREEN + "上一页");
                 display.setItemMeta(meta);
@@ -136,7 +136,7 @@ public abstract class PagedGUI<T> extends AbstractGUI {
             if (page >= getMaxPage()) {
                 setItem(InventoryUtils.genBlankButton());
             } else {
-                ItemStack item = new ItemStack(Material.REDSTONE_COMPARATOR);
+                ItemStack item = XMaterial.COMPARATOR.parseItem();
                 ItemMeta meta = item.getItemMeta();
                 meta.setDisplayName(ChatColor.GREEN + "下一页");
                 item.setItemMeta(meta);

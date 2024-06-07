@@ -1,9 +1,9 @@
 package com.mineclay.tclite.ui.numberpanelgui;
 
+import com.mineclay.tclite.XMaterial;
 import com.mineclay.tclite.ui.AbstractButton;
 import com.mineclay.tclite.ui.GUIResponse;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -41,8 +41,7 @@ class ConfirmButton extends AbstractButton {
 
     @Override
     public void init() {
-        ItemStack item = new ItemStack(Material.STAINED_GLASS_PANE);
-        item.setDurability((short) 5);
+        ItemStack item = XMaterial.GREEN_STAINED_GLASS_PANE.parseItem();
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.GREEN + "确认");
         item.setItemMeta(meta);

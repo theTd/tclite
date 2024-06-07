@@ -1,5 +1,6 @@
 package com.mineclay.tclite.ui;
 
+import com.mineclay.tclite.XMaterial;
 import com.mineclay.tclite.mcnative.McNative;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -269,7 +270,7 @@ public class InventoryUtils {
     }
 
     public static ItemStack genBlankButton() {
-        return genBlankButton(Material.STAINED_GLASS_PANE, (short) 15);
+        return genBlankButton(XMaterial.BLACK_STAINED_GLASS_PANE.parseMaterial());
     }
 
     public static ItemStack genSimpleItem(Material material, short durability, String title, String... desc) {

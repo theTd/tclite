@@ -13,8 +13,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":nativeport:api"))
-//    paperweight.paperDevBundle("1.18.2-R0.1-SNAPSHOT")
+    api(project(":nativeport-api"))
 
     compileOnly("org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT")
 

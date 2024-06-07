@@ -5,7 +5,6 @@ import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
@@ -60,7 +59,8 @@ public class ColorUtil {
     }
 
     private static ItemStack fromWhitelistedUrl(String url) {
-        ItemStack itemStack = MinecraftReflection.getBukkitItemStack(new ItemStack(Material.SKULL_ITEM, 1, (short) 3));
+        //noinspection DataFlowIssue
+        ItemStack itemStack = MinecraftReflection.getBukkitItemStack(XMaterial.PLAYER_HEAD.parseItem());
         NbtFactory.setItemTag(itemStack, createCompound(url));
         return itemStack;
     }

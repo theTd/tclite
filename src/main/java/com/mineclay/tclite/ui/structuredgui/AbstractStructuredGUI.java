@@ -1,9 +1,9 @@
 package com.mineclay.tclite.ui.structuredgui;
 
 import com.google.common.base.Preconditions;
+import com.mineclay.tclite.XMaterial;
 import com.mineclay.tclite.ui.*;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -25,8 +25,7 @@ public abstract class AbstractStructuredGUI extends AbstractGUI {
 
         AbstractGUI parentGUI = getParentGUI();
         if (parentGUI != null) {
-            ItemStack backDisplay = new ItemStack(Material.STAINED_GLASS_PANE);
-            backDisplay.setDurability((short) 4);
+            ItemStack backDisplay = XMaterial.YELLOW_STAINED_GLASS_PANE.parseItem();
             ItemMeta meta = backDisplay.getItemMeta();
             meta.setDisplayName(ChatColor.YELLOW + "返回");
             backDisplay.setItemMeta(meta);
@@ -69,8 +68,7 @@ public abstract class AbstractStructuredGUI extends AbstractGUI {
                 super.addButton(new SimpleButton(this, InventoryUtils.genBlankButton()), i);
             }
         }
-        ItemStack closeDisplay = new ItemStack(Material.STAINED_GLASS_PANE);
-        closeDisplay.setDurability((short) 14);
+        ItemStack closeDisplay = XMaterial.RED_STAINED_GLASS_PANE.parseItem();
         ItemMeta meta = closeDisplay.getItemMeta();
         meta.setDisplayName(ChatColor.RED + "关闭");
         closeDisplay.setItemMeta(meta);

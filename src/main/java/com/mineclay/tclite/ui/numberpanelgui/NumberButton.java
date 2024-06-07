@@ -1,10 +1,10 @@
 package com.mineclay.tclite.ui.numberpanelgui;
 
+import com.mineclay.tclite.XMaterial;
 import com.mineclay.tclite.ui.AbstractButton;
 import com.mineclay.tclite.ui.GUIResponse;
 import com.mineclay.tclite.ui.InventoryUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -32,8 +32,7 @@ public class NumberButton extends AbstractButton {
         HashMap<String, String> map = new HashMap<>();
         map.put("[number]", this.num + "");
 
-        ItemStack item = new ItemStack(Material.STAINED_GLASS_PANE);
-        item.setDurability((short) 9);
+        ItemStack item = XMaterial.CYAN_STAINED_GLASS_PANE.parseItem();
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.AQUA + "[number]");
         item.setItemMeta(meta);

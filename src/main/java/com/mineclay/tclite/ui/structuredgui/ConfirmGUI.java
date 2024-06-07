@@ -1,10 +1,10 @@
 package com.mineclay.tclite.ui.structuredgui;
 
+import com.mineclay.tclite.XMaterial;
 import com.mineclay.tclite.ui.AbstractGUI;
 import com.mineclay.tclite.ui.GUIResponse;
 import com.mineclay.tclite.ui.SimpleButton;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,8 +28,7 @@ public abstract class ConfirmGUI extends AbstractStructuredGUI {
 
     @Override
     protected void putContentButtons() {
-        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE);
-        icon.setDurability((short) 5);
+        ItemStack icon = XMaterial.LIME_STAINED_GLASS_PANE.parseItem();
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName(ChatColor.GREEN + "确定");
         List<String> lore = new ArrayList<>();
@@ -41,8 +40,7 @@ public abstract class ConfirmGUI extends AbstractStructuredGUI {
         icon.setItemMeta(meta);
         addButton(new SimpleButton(this, icon, this::yes), 3);
 
-        icon = new ItemStack(Material.STAINED_GLASS_PANE);
-        icon.setDurability((short) 14);
+        icon = XMaterial.RED_STAINED_GLASS_PANE.parseItem();
         meta = icon.getItemMeta();
         meta.setDisplayName(ChatColor.RED + "取消");
         lore = new ArrayList<>();

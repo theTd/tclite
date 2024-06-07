@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":nativeport:api"))
+    api(project(":nativeport-api"))
     paperweight.paperDevBundle("1.18.2-R0.1-SNAPSHOT")
 
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
