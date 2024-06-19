@@ -565,7 +565,10 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 if (!last) {
                     resolve.put(arg, arg.parse(ctx, toParse));
                 } else {
-                    arg.complete(ctx, "").forEach(result::add);
+                    arg.complete(ctx, toParse).forEach(result::add);
+                    if (result.isEmpty()) {
+                        result.add(arg.isOptional() ? "[" + arg.getName() + "]" : "<" + arg.getName() + ">");
+                    }
                     break;
                 }
             }

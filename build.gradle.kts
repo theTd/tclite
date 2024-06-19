@@ -9,8 +9,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "com.mineclay"
-
 val clayUsername: String by project
 val clayPassword: String by project
 
