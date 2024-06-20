@@ -503,7 +503,19 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 thisCommand.append(" <").append(arg.getName()).append(">");
             }
         }
+        String free = argsPrompt(ctx);
+        if (free != null && !free.isEmpty()) {
+            if (free.startsWith(" ")) {
+                thisCommand.append(free);
+            } else {
+                thisCommand.append(" ").append(free);
+            }
+        }
         ctx.getSender().sendMessage(ChatColor.GOLD + "/" + thisCommand + (description != null ? " - " + description : ""));
+    }
+
+    public @Nullable String argsPrompt(CommandContext ctx) {
+        return "";
     }
 
     private void showAllHelp(CommandContext ctx, boolean child) {
