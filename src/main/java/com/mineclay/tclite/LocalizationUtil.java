@@ -1,6 +1,71 @@
 package com.mineclay.tclite;
 
+import org.jetbrains.annotations.Nullable;
+
 public class LocalizationUtil {
+
+    /**
+     * @param period ?Y?M?w?d?H?m?s y,Y,M,W,w,d,D,H,h,m,S,s are accepted
+     * @return period in milliseconds, null if the period is invalid
+     */
+    public static @Nullable Long parsePeriodMs(@Nullable String period) {
+        if (period == null || period.isEmpty()) {
+            return null;
+        }
+
+        long totalMilliseconds = 0;
+        int length = period.length();
+        int i = 0;
+
+        while (i < length) {
+            int start = i;
+            while (i < length && Character.isDigit(period.charAt(i))) {
+                i++;
+            }
+
+            if (start == i || i >= length) {
+                return null; // Invalid format
+            }
+
+            long value = Long.parseLong(period.substring(start, i));
+            char unit = period.charAt(i);
+            i++;
+
+            switch (unit) {
+                case 'Y':
+                case 'y':
+                    totalMilliseconds += value * 365L * 24L * 60L * 60L * 1000L;
+                    break;
+                case 'M':
+                    totalMilliseconds += value * 30L * 24L * 60L * 60L * 1000L;
+                    break;
+                case 'W':
+                case 'w':
+                    totalMilliseconds += value * 7L * 24L * 60L * 60L * 1000L;
+                    break;
+                case 'D':
+                case 'd':
+                    totalMilliseconds += value * 24L * 60L * 60L * 1000L;
+                    break;
+                case 'H':
+                case 'h':
+                    totalMilliseconds += value * 60L * 60L * 1000L;
+                    break;
+                case 'm':
+                    totalMilliseconds += value * 60L * 1000L;
+                    break;
+                case 'S':
+                case 's':
+                    totalMilliseconds += value * 1000L;
+                    break;
+                default:
+                    return null; // Invalid unit
+            }
+        }
+
+        return totalMilliseconds;
+    }
+
     public static String localizeTime(long second) {
         if (second < 0) second = 0;
         if (second == 0) return "0\u79D2";
