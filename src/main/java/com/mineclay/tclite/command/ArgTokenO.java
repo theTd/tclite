@@ -3,6 +3,7 @@ package com.mineclay.tclite.command;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface ArgTokenO<T> extends ArgTokenR<T> {
@@ -12,10 +13,17 @@ public interface ArgTokenO<T> extends ArgTokenR<T> {
     }
 
     @NotNull
-    ArgTokenR<T> defaultsTo(@NotNull T defaultValue);
+    default ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
+        return defaultValue(ctx -> defaultValue);
+    }
 
     @NotNull
-    ArgTokenO<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier);
+    default ArgTokenO<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+        return defaultValue(ctx -> defaultValueSupplier.get());
+    }
+
+    @NotNull
+    ArgTokenO<T> defaultValue(@NotNull Function<CommandContext, T> defaultValueSupplier);
 
     @Override
     @NotNull
@@ -23,7 +31,15 @@ public interface ArgTokenO<T> extends ArgTokenR<T> {
 
     @Override
     @NotNull
+    <U> ArgTokenO<U> parserOrAsync(@NotNull InlineParser<U> parser);
+
+    @Override
+    @NotNull
     ArgTokenO<T> completor(@NotNull InlineCompletor completor);
+
+    @Override
+    @NotNull
+    ArgTokenO<T> completorOrAsync(@NotNull InlineCompletor completor);
 
     @Override
     @NotNull

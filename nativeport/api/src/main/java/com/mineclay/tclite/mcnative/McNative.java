@@ -2,7 +2,10 @@ package com.mineclay.tclite.mcnative;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,5 +96,9 @@ public class McNative {
 
     public static void sendSlotChange(int windowId, int slot, ItemStack item, Player p) {
         impl.sendSlotChange(windowId, slot, item, p);
+    }
+
+    public static @Nullable AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent(@NotNull Event event) {
+        return impl.adaptAsyncTabCompleteEvent(event);
     }
 }

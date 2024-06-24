@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CommandSignal extends Throwable {
     public final static CommandSignal ESCAPE_HELP = new CommandSignal("");
+    public final static CommandSignal NOT_IMPLEMENTED = new CommandSignal("");
 
     public CommandSignal(String message) {
         super(message);

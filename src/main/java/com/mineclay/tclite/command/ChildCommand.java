@@ -13,4 +13,8 @@ public interface ChildCommand {
     default List<String> tabComplete(@NotNull CommandContext ctx, String arg) throws CommandSignal {
         return Collections.emptyList();
     }
+
+    default List<String> asyncTabComplete(@NotNull CommandContext ctx, String arg) throws CommandSignal {
+        throw CommandSignal.NOT_IMPLEMENTED;
+    }
 }

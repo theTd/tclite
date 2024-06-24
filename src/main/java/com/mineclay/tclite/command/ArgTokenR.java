@@ -8,7 +8,15 @@ public interface ArgTokenR<T> extends ArgToken<T> {
 
     @Override
     @NotNull
+    <U> ArgTokenO<U> parserOrAsync(@NotNull InlineParser<U> parser);
+
+    @Override
+    @NotNull
     ArgTokenR<T> completor(@NotNull InlineCompletor completor);
+
+    @Override
+    @NotNull
+    ArgTokenR<T> completorOrAsync(@NotNull InlineCompletor completor);
 
     @Override
     @NotNull

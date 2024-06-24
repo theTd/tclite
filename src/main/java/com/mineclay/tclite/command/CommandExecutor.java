@@ -2,11 +2,16 @@ package com.mineclay.tclite.command;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.mineclay.tclite.mcnative.AsyncTabCompleteEventSocket;
+import com.mineclay.tclite.mcnative.McNative;
 import lombok.Getter;
+import org.apache.commons.lang.NotImplementedException;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -19,7 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -117,13 +122,8 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
-        public @NotNull ArgTokenO<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+        public @NotNull ArgTokenO<T> defaultValue(@NotNull Function<CommandContext, T> defaultValueSupplier) {
             return (ArgTokenO<T>) super.defaultsTo(defaultValueSupplier);
-        }
-
-        @Override
-        public @NotNull ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
-            return (ArgTokenR<T>) super.defaultsTo(() -> defaultValue);
         }
 
         @Override
@@ -132,8 +132,18 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
+        public @NotNull <U> ArgTokenO<U> parserOrAsync(@NotNull InlineParser<U> parser) {
+            return (ArgTokenO<U>) super.parserOrAsync(parser);
+        }
+
+        @Override
         public @NotNull ArgTokenO<T> completor(@NotNull InlineCompletor completor) {
             return (ArgTokenO<T>) super.completor(completor);
+        }
+
+        @Override
+        public @NotNull ArgTokenO<T> completorOrAsync(@NotNull InlineCompletor completor) {
+            return (ArgTokenO<T>) super.completorOrAsync(completor);
         }
 
         @Override
@@ -148,13 +158,8 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
-        public @NotNull ArgTokenO<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+        public @NotNull ArgTokenO<T> defaultValue(@NotNull Function<CommandContext, T> defaultValueSupplier) {
             return (ArgTokenO<T>) super.defaultsTo(defaultValueSupplier);
-        }
-
-        @Override
-        public @NotNull ArgTokenR<T> defaultsTo(@NotNull T defaultValue) {
-            return (ArgTokenR<T>) super.defaultsTo(() -> defaultValue);
         }
 
         @Override
@@ -163,8 +168,18 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
+        public @NotNull <U> ArgTokenO<U> parserOrAsync(@NotNull InlineParser<U> parser) {
+            return (ArgTokenO<U>) super.parserOrAsync(parser);
+        }
+
+        @Override
         public @NotNull ArgTokenO<T> completor(@NotNull InlineCompletor completor) {
             return (ArgTokenO<T>) super.completor(completor);
+        }
+
+        @Override
+        public @NotNull ArgTokenO<T> completorOrAsync(@NotNull InlineCompletor completor) {
+            return (ArgTokenO<T>) super.completorOrAsync(completor);
         }
 
         @Override
@@ -180,9 +195,13 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         @NotNull
         InlineParser<T> parser;
         @Nullable
+        InlineParser<T> asyncParser;
+        @Nullable
         InlineCompletor completor;
         @Nullable
-        Supplier<T> defaultValueSupplier;
+        InlineCompletor asyncCompletor;
+        @Nullable
+        Function<CommandContext, T> defaultValueSupplier;
         @Nullable
         String description;
 
@@ -190,15 +209,10 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
         public RawArgHandler(ArgParser<T> parser, String name, boolean optional) {
             this.parser = parser::parse;
+            this.asyncParser = parser::asyncParse;
             this.name = name != null ? name : parser.getName() != null ? parser.getName() : "";
             completor = parser::complete;
-            this.optional = optional;
-        }
-
-        private RawArgHandler(@NotNull InlineParser<T> parser, @Nullable InlineCompletor completor, String name, boolean optional) {
-            this.parser = parser;
-            this.completor = completor;
-            this.name = name == null ? "" : name;
+            asyncCompletor = parser::asyncComplete;
             this.optional = optional;
         }
 
@@ -208,12 +222,31 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
             //noinspection unchecked
             RawArgHandler<U> h = (RawArgHandler<U>) this;
             h.parser = parser;
+            h.asyncParser = null;
+            return h;
+        }
+
+        @Override
+        public @NotNull <U> ArgToken<U> parserOrAsync(@NotNull InlineParser<U> parser) {
+            defaultValueSupplier = null;
+            //noinspection unchecked
+            RawArgHandler<U> h = (RawArgHandler<U>) this;
+            h.parser = parser;
+            h.asyncParser = parser;
             return h;
         }
 
         @Override
         public @NotNull ArgToken<T> completor(@NotNull InlineCompletor completor) {
             this.completor = completor;
+            this.asyncCompletor = null;
+            return this;
+        }
+
+        @Override
+        public @NotNull ArgToken<T> completorOrAsync(@NotNull InlineCompletor completor) {
+            this.completor = completor;
+            this.asyncCompletor = completor;
             return this;
         }
 
@@ -223,7 +256,7 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
             return this;
         }
 
-        public ArgToken<T> defaultsTo(@NotNull Supplier<T> defaultValueSupplier) {
+        public ArgToken<T> defaultsTo(@NotNull Function<CommandContext, T> defaultValueSupplier) {
             this.defaultValueSupplier = defaultValueSupplier;
             return this;
         }
@@ -234,8 +267,20 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         }
 
         @Override
+        public @NotNull T asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            if (asyncParser == null) throw CommandSignal.NOT_IMPLEMENTED;
+            return asyncParser.parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             return completor == null ? Collections.emptyList() : completor.complete(ctx, arg);
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            if (asyncCompletor == null) throw CommandSignal.NOT_IMPLEMENTED;
+            return asyncCompletor.complete(ctx, arg);
         }
     }
 
@@ -472,8 +517,8 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 }
                 if (toParse == null) {
                     if (arg.isOptional()) {
-                        Supplier<?> defaultValueSupplier = arg.getDefaultValueSupplier();
-                        resolve.put(arg, defaultValueSupplier == null ? null : defaultValueSupplier.get());
+                        Function<CommandContext, ?> defaultValueSupplier = arg.getDefaultValueSupplier();
+                        resolve.put(arg, defaultValueSupplier == null ? null : defaultValueSupplier.apply(ctx));
                     } else {
                         throw escapeToHelpMessage();
                     }
@@ -546,6 +591,10 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
     @Override
     public final List<String> onTabComplete(CommandSender sender, org.bukkit.command.Command command, String alias, String[] parts) {
+        return tabCompleteOrAsync(sender, command, alias, parts, false);
+    }
+
+    private List<String> tabCompleteOrAsync(CommandSender sender, org.bukkit.command.Command command, String alias, String[] parts, boolean async) {
         AtomicInteger idx = new AtomicInteger(0);
         CommandExecutor cmd;
         try {
@@ -575,9 +624,17 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 String toParse = args.removeFirst();
                 boolean last = args.isEmpty();
                 if (!last) {
-                    resolve.put(arg, arg.parse(ctx, toParse));
+                    if (async) {
+                        resolve.put(arg, arg.asyncParse(ctx, toParse));
+                    } else {
+                        resolve.put(arg, arg.parse(ctx, toParse));
+                    }
                 } else {
-                    arg.complete(ctx, toParse).forEach(result::add);
+                    if (async) {
+                        arg.asyncComplete(ctx, toParse).forEach(result::add);
+                    } else {
+                        arg.complete(ctx, toParse).forEach(result::add);
+                    }
                     if (result.isEmpty()) {
                         result.add(arg.isOptional() ? "[" + arg.getName() + "]" : "<" + arg.getName() + ">");
                     }
@@ -587,13 +644,20 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
 
             if (args.isEmpty()) return new ArrayList<>(result);
             String lastArg = args.peekLast();
-            List<String> complete = cmd.tabComplete(ctx, lastArg);
+            List<String> complete;
+            if (async) {
+                complete = cmd.asyncTabComplete(ctx, lastArg);
+            } else {
+                complete = cmd.tabComplete(ctx, lastArg);
+            }
             if (complete != null) {
                 result.addAll(complete);
             } else if (result.isEmpty()) return null;
 
             return new ArrayList<>(result);
         } catch (CommandSignal e) {
+            if (e == CommandSignal.NOT_IMPLEMENTED) throw new NotImplementedException();
+
             if (e == CommandSignal.ESCAPE_HELP) {
                 showAllHelp(ctx, true);
             } else if (e instanceof CommandSignal.ArgError) {
@@ -608,6 +672,19 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
     @Nullable
     public List<String> tabComplete(@NotNull CommandContext ctx, String arg) throws CommandSignal {
         return null;
+    }
+
+    /**
+     * implement this method to support async tab complete
+     *
+     * @param ctx ctx
+     * @param arg arg
+     * @return completion result
+     * @throws CommandSignal if not implemented, CommandSignal.NOT_IMPLEMENTED
+     */
+    @Nullable
+    public List<String> asyncTabComplete(@NotNull CommandContext ctx, String arg) throws CommandSignal {
+        throw CommandSignal.NOT_IMPLEMENTED;
     }
 
     public @NotNull String getCommandPath() {
@@ -647,6 +724,26 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
             cmd.setTabCompleter(this);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void handleAsyncCompleteEvent(Event event) {
+        AsyncTabCompleteEventSocket socket = McNative.adaptAsyncTabCompleteEvent(event);
+        if (socket == null) return;
+        if (!socket.isCommand()) return;
+        String buffer = socket.getBuffer().substring(1);
+        String[] parts = buffer.split(" ");
+        if (parts.length < 2) return;
+        Command cmd = Bukkit.getPluginCommand(parts[0]);
+        if (cmd == null) return;
+        String[] argParts = Arrays.stream(parts).skip(1).toArray(String[]::new);
+        try {
+            List<String> result = tabCompleteOrAsync(socket.getSender(), cmd, parts[0], argParts, true);
+            if (result != null) {
+                socket.setCompletions(result);
+                socket.setHandled(true);
+            }
+        } catch (NotImplementedException ignored) {
         }
     }
 

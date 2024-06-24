@@ -26,7 +26,17 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull String asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return arg;
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             return Collections.emptyList();
         }
     };
@@ -47,7 +57,17 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull Integer asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             return Collections.emptyList();
         }
     };
@@ -68,7 +88,17 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull Double asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             return Collections.emptyList();
         }
     };
@@ -89,12 +119,22 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull Boolean asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             List<String> candidates = new ArrayList<>();
             candidates.add("true");
             candidates.add("false");
             String pre = arg.toLowerCase(Locale.ROOT);
             return candidates.stream().filter(c -> c.toLowerCase(Locale.ROOT).startsWith(pre)).collect(Collectors.toList());
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return complete(ctx, arg);
         }
     };
 
@@ -115,9 +155,19 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull Player asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             String pre = arg.toLowerCase(Locale.ROOT);
             return Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(pre)).collect(Collectors.toList());
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return complete(ctx, arg);
         }
     };
 
@@ -133,9 +183,19 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull String asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return arg;
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             String pre = arg.toLowerCase(Locale.ROOT);
             return Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(pre)).collect(Collectors.toList());
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return complete(ctx, arg);
         }
     };
 
@@ -156,9 +216,19 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull Material asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             String pre = arg.toLowerCase(Locale.ROOT);
             return Arrays.stream(Material.values()).map(Material::name).filter(m -> m.toLowerCase(Locale.ROOT).startsWith(pre)).collect(Collectors.toList());
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return complete(ctx, arg);
         }
     };
 
@@ -179,9 +249,19 @@ public interface ArgParser<T> {
         }
 
         @Override
+        public @NotNull Enchantment asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return parse(ctx, arg);
+        }
+
+        @Override
         public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
             String pre = arg.toLowerCase(Locale.ROOT);
             return Arrays.stream(Enchantment.values()).map(Enchantment::getName).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(pre)).collect(Collectors.toList());
+        }
+
+        @Override
+        public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+            return complete(ctx, arg);
         }
     };
 
@@ -203,9 +283,19 @@ public interface ArgParser<T> {
             }
 
             @Override
+            public @NotNull T asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+                return parse(ctx, arg);
+            }
+
+            @Override
             public @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
                 String pre = arg.toLowerCase(Locale.ROOT);
                 return Arrays.stream(clazz.getEnumConstants()).map(Enum::name).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(pre)).collect(Collectors.toList());
+            }
+
+            @Override
+            public @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+                return complete(ctx, arg);
             }
         };
     }
@@ -214,7 +304,31 @@ public interface ArgParser<T> {
 
     @NotNull T parse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal;
 
+    /**
+     * @param ctx ctx
+     * @param arg arg
+     * @return parsed value
+     * @throws CommandSignal if not supported, CommandSignal.NOT_IMPLEMENTED
+     */
+    default @NotNull T asyncParse(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+        throw CommandSignal.NOT_IMPLEMENTED;
+    }
+
     @NotNull Iterable<String> complete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal;
+
+    /**
+     * <p>implement this method to support async completion</p>
+     * <p><b>CAUTION</b></p>
+     * <p>all of the {@link ArgParser} prior to this should implement {@link #asyncParse(CommandContext, String)} to make async completion works</p>
+     *
+     * @param ctx ctx
+     * @param arg arg
+     * @return complete result
+     * @throws CommandSignal if not supported, CommandSignal.NOT_IMPLEMENTED
+     */
+    default @NotNull Iterable<String> asyncComplete(@NotNull CommandContext ctx, @NotNull String arg) throws CommandSignal {
+        throw CommandSignal.NOT_IMPLEMENTED;
+    }
 
     default T error(String error) throws CommandSignal {
         throw new CommandSignal(error);

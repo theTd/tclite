@@ -1,7 +1,10 @@
 package com.mineclay.tclite.mcnative;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface McNativePort {
     void sendTitle(Player player, String title, String subtitle, int fadeIn, int keep, int fadeOut);
@@ -21,4 +24,9 @@ public interface McNativePort {
     int getActiveWindowId(Player player);
 
     void sendSlotChange(int windowId, int slot, ItemStack item, Player p);
+
+    @Nullable
+    default AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent(@NotNull Event event) {
+        return null;
+    }
 }
