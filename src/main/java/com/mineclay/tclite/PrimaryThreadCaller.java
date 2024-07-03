@@ -10,10 +10,12 @@ import java.util.concurrent.Executor;
 public abstract class PrimaryThreadCaller<T> {
     final JavaPlugin plugin;
     final Executor executor;
+    final Executor asyncExecutor;
 
     public PrimaryThreadCaller(JavaPlugin plugin) {
         this.plugin = plugin;
         executor = (t) -> Bukkit.getScheduler().runTask(plugin, t);
+        asyncExecutor = (t) -> Bukkit.getScheduler().runTaskAsynchronously(plugin, t);
     }
 
     protected abstract T syncCall();
@@ -23,7 +25,11 @@ public abstract class PrimaryThreadCaller<T> {
         return callAsync().get();
     }
 
-    public CompletableFuture<T> callAsync() {
+    public CompletableFuture<T> callSync() {
         return CompletableFuture.supplyAsync(this::syncCall, executor);
+    }
+
+    public CompletableFuture<T> callAsync() {
+        return CompletableFuture.supplyAsync(this::syncCall, executor).thenApplyAsync(i -> i, asyncExecutor);
     }
 }
