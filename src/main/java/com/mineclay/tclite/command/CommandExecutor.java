@@ -12,10 +12,14 @@ import org.bukkit.Server;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -732,10 +736,11 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
         if (socket == null) return;
         if (!socket.isCommand()) return;
         String buffer = socket.getBuffer().substring(1);
-        String[] parts = buffer.split(" ");
+        String[] parts = buffer.split(" ", -1);
         if (parts.length < 2) return;
-        Command cmd = Bukkit.getPluginCommand(parts[0]);
+        PluginCommand cmd = Bukkit.getPluginCommand(parts[0]);
         if (cmd == null) return;
+        if (cmd.getExecutor() != this) return;
         String[] argParts = Arrays.stream(parts).skip(1).toArray(String[]::new);
         try {
             List<String> result = tabCompleteOrAsync(socket.getSender(), cmd, parts[0], argParts, true);
@@ -772,5 +777,33 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
             }
         }
         return this;
+    }
+
+    public static void listenAsyncCompleteEvent(Plugin plugin) {
+        try {
+            Class<?> clz = Class.forName("com.destroystokyo.paper.event.server.AsyncTabCompleteEvent");
+            HandlerList handlers = (HandlerList) clz.getMethod("getHandlerList").invoke(null);
+            Listener listener = new Listener() {
+            };
+            handlers.register(new RegisteredListener(listener, (l, event) -> {
+                try {
+                    AsyncTabCompleteEventSocket s = McNative.adaptAsyncTabCompleteEvent(event);
+                    if (s == null) return;
+                    String buffer = s.getBuffer().substring(1);
+                    String[] parts = buffer.split(" ", -1);
+                    if (parts.length == 0) return;
+                    PluginCommand cmd = Bukkit.getPluginCommand(parts[0]);
+                    if (cmd == null) return;
+                    if (cmd.getExecutor() instanceof CommandExecutor) {
+                        CommandExecutor executor = (CommandExecutor) cmd.getExecutor();
+                        executor.handleAsyncCompleteEvent(event);
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.SEVERE, "exception handling async complete event", e);
+                }
+            }, EventPriority.NORMAL, plugin, false));
+        } catch (Throwable t) {
+            plugin.getLogger().log(Level.SEVERE, "failed to listen async complete event: " + t);
+        }
     }
 }
