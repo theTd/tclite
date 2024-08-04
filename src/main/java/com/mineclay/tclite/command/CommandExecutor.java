@@ -2,7 +2,7 @@ package com.mineclay.tclite.command;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.mineclay.tclite.mcnative.AsyncTabCompleteEventSocket;
+import com.mineclay.tclite.AsyncTabCompleteEventSocket;
 import com.mineclay.tclite.mcnative.McNative;
 import lombok.Getter;
 import org.apache.commons.lang.NotImplementedException;
@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -715,14 +714,9 @@ public abstract class CommandExecutor implements org.bukkit.command.CommandExecu
                 cons.setAccessible(true);
                 cmd = cons.newInstance(label, plugin);
                 if (aliases != null) cmd.setAliases(aliases);
-                Field commandMap = plugin.getServer().getClass().getDeclaredField("commandMap");
-                commandMap.setAccessible(true);
-                CommandMap map = (CommandMap) commandMap.get(plugin.getServer());
+                CommandMap map = McNative.getCommandMap();
                 map.register(plugin.getName(), cmd);
-                try {
-                    plugin.getServer().getClass().getDeclaredMethod("syncCommands").invoke(plugin.getServer());
-                } catch (NoSuchMethodException ignored) {
-                }
+                McNative.syncCommands();
             }
             cmd.setExecutor(this);
             cmd.setTabCompleter(this);

@@ -1,104 +1,88 @@
 package com.mineclay.tclite.mcnative;
 
-import org.bukkit.Bukkit;
+import com.mineclay.tclite.AsyncTabCompleteEventSocket;
+import org.bukkit.command.CommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static com.mineclay.tclite.mcnative.Implementation.IMPL;
 
-public class McNative {
-    private static McNativePort impl = new McNativePort() {
-        @Override
-        public void sendTitle(Player player, String title, String subtitle, int fadeIn, int keep, int fadeOut) {
-        }
+public interface McNative {
+    void sendTitle0(Player player, String title, String subtitle, int fadeIn, int keep, int fadeOut);
 
-        @Override
-        public void sendTitle(Player player, String title) {
-        }
-
-        @Override
-        public void sendSubtitle(Player player, String subtitle) {
-        }
-
-        @Override
-        public void clearTitle(Player player) {
-        }
-
-        @Override
-        public void resetTitle(Player player) {
-        }
-
-        @Override
-        public void setTimes(Player player, int fadeIn, int keep, int fadeOut) {
-        }
-
-        @Override
-        public int getStateId(Player player) {
-            return -1;
-        }
-
-        @Override
-        public int getActiveWindowId(Player player) {
-            return -1;
-        }
-
-        @Override
-        public void sendSlotChange(int windowId, int slot, ItemStack item, Player p) {
-        }
-    };
-
-    static {
-        String pkg = Bukkit.getServer().getClass().getPackage().getName();
-        String version = pkg.substring(pkg.lastIndexOf('.') + 1);
-        try {
-            Class<?> clazz = Class.forName(McNativePort.class.getName() + "_" + version);
-            impl = (McNativePort) clazz.newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            Logger.getLogger(McNative.class.getName()).log(Level.SEVERE, "Failed to load native port for version " + version, e);
-        }
+    static void sendTitle(Player player, String title, String subtitle, int fadeIn, int keep, int fadeOut) {
+        IMPL.sendTitle0(player, title, subtitle, fadeIn, keep, fadeOut);
     }
 
-    public static void sendTitle(Player player, String title, String subtitle, int fadeIn, int keep, int fadeOut) {
-        impl.sendTitle(player, title, subtitle, fadeIn, keep, fadeOut);
+    void sendTitle0(Player player, String title);
+
+    static void sendTitle(Player player, String title) {
+        IMPL.sendTitle0(player, title);
     }
 
-    public static void sendTitle(Player player, String title) {
-        impl.sendTitle(player, title);
+    void sendSubtitle0(Player player, String subtitle);
+
+    static void sendSubtitle(Player player, String subtitle) {
+        IMPL.sendSubtitle0(player, subtitle);
     }
 
-    public static void sendSubtitle(Player player, String subtitle) {
-        impl.sendSubtitle(player, subtitle);
+    void clearTitle0(Player player);
+
+    static void clearTitle(Player player) {
+        IMPL.clearTitle0(player);
     }
 
-    public static void clearTitle(Player player) {
-        impl.clearTitle(player);
+    void resetTitle0(Player player);
+
+    static void resetTitle(Player player) {
+        IMPL.resetTitle0(player);
     }
 
-    public static void resetTitle(Player player) {
-        impl.resetTitle(player);
+    void setTimes0(Player player, int fadeIn, int keep, int fadeOut);
+
+    static void setTimes(Player player, int fadeIn, int keep, int fadeOut) {
+        IMPL.setTimes0(player, fadeIn, keep, fadeOut);
     }
 
-    public static void setTimes(Player player, int fadeIn, int keep, int fadeOut) {
-        impl.setTimes(player, fadeIn, keep, fadeOut);
+    int getStateId0(Player player);
+
+    static int getStateId(Player player) {
+        return IMPL.getStateId0(player);
     }
 
-    public static int getStateId(Player player) {
-        return impl.getStateId(player);
+    int getActiveWindowId0(Player player);
+
+    static int getActiveWindowId(Player player) {
+        return IMPL.getActiveWindowId0(player);
     }
 
-    public static int getActiveWindowId(Player player) {
-        return impl.getActiveWindowId(player);
+    void sendSlotChange0(int windowId, int slot, ItemStack item, Player p);
+
+    static void sendSlotChange(int windowId, int slot, ItemStack item, Player p) {
+        IMPL.sendSlotChange0(windowId, slot, item, p);
     }
 
-    public static void sendSlotChange(int windowId, int slot, ItemStack item, Player p) {
-        impl.sendSlotChange(windowId, slot, item, p);
+    @Nullable
+    default AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent0(@NotNull Event event) {
+        return null;
     }
 
-    public static @Nullable AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent(@NotNull Event event) {
-        return impl.adaptAsyncTabCompleteEvent(event);
+    static @Nullable AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent(@NotNull Event event) {
+        return IMPL.adaptAsyncTabCompleteEvent0(event);
+    }
+
+    CommandMap getCommandMap0();
+
+    static CommandMap getCommandMap() {
+        return IMPL.getCommandMap0();
+    }
+
+    void syncCommands0();
+
+    static void syncCommands() {
+        IMPL.syncCommands0();
     }
 }

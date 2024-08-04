@@ -1,15 +1,20 @@
-package com.mineclay.tclite.mcnative;
+package com.mineclay.tclite.mcnative.v1_18_R2;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
+import com.mineclay.tclite.AsyncTabCompleteEventSocket;
+import com.mineclay.tclite.mcnative.McNative;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_18_R2.CraftServer;
 import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -23,9 +28,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class McNativePort_v1_18_R2 implements McNativePort {
-
-    public void sendTitle(Player player, String jsonTitle, String jsonSubtitle, int fadeIn, int keep, int fadeOut) {
+public class McNativeImpl implements McNative {
+    public void sendTitle0(Player player, String jsonTitle, String jsonSubtitle, int fadeIn, int keep, int fadeOut) {
         player.showTitle(Title.title(GsonComponentSerializer.gson().deserialize(jsonTitle),
                         GsonComponentSerializer.gson().deserialize(jsonSubtitle),
                         Title.Times.times(Duration.ofMillis(fadeIn * 50L),
@@ -35,44 +39,42 @@ public class McNativePort_v1_18_R2 implements McNativePort {
         );
     }
 
-    public void sendTitle(Player player, String json) {
+    public void sendTitle0(Player player, String json) {
         player.sendTitlePart(TitlePart.TITLE, GsonComponentSerializer.gson().deserialize(json));
     }
 
-    public void sendSubtitle(Player player, String json) {
+    public void sendSubtitle0(Player player, String json) {
         player.sendTitlePart(TitlePart.SUBTITLE, GsonComponentSerializer.gson().deserialize(json));
     }
 
-    public void clearTitle(Player player) {
+    public void clearTitle0(Player player) {
         player.clearTitle();
     }
 
-    public void resetTitle(Player player) {
+    public void resetTitle0(Player player) {
         player.resetTitle();
     }
 
-    public void setTimes(Player player, int fadeIn, int keep, int fadeOut) {
+    public void setTimes0(Player player, int fadeIn, int keep, int fadeOut) {
         player.sendTitlePart(TitlePart.TIMES, Title.Times.times(Duration.ofMillis(fadeIn * 50L), Duration.ofMillis(keep * 50L), Duration.ofMillis(fadeOut * 50L)));
     }
 
-    public int getStateId(Player player) {
+    public int getStateId0(Player player) {
         return ((CraftPlayer) player).getHandle().containerMenu.getStateId();
-//        return ((CraftPlayer) player).getHandle().bV.j();
     }
 
-    public int getActiveWindowId(Player player) {
+    public int getActiveWindowId0(Player player) {
         return ((CraftPlayer) player).getHandle().containerMenu.containerId;
-//        return ((CraftPlayer) player).getHandle().bV.j;
     }
 
     @Override
-    public void sendSlotChange(int windowId, int slot, ItemStack item, Player p) {
+    public void sendSlotChange0(int windowId, int slot, ItemStack item, Player p) {
         if (item == null) item = new ItemStack(Material.AIR);
 
         PacketContainer packet;
         packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SET_SLOT);
         packet.getIntegers().write(0, windowId);
-        packet.getIntegers().write(1, getStateId(p));
+        packet.getIntegers().write(1, getStateId0(p));
         packet.getIntegers().write(2, slot);
         packet.getItemModifier().write(0, item);
 
@@ -84,7 +86,7 @@ public class McNativePort_v1_18_R2 implements McNativePort {
     }
 
     @Override
-    public @Nullable AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent(@NotNull Event event) {
+    public @Nullable AsyncTabCompleteEventSocket adaptAsyncTabCompleteEvent0(@NotNull Event event) {
         if (event instanceof AsyncTabCompleteEvent e) {
             return new AsyncTabCompleteEventSocket() {
                 @Override
@@ -138,5 +140,15 @@ public class McNativePort_v1_18_R2 implements McNativePort {
                 }
             };
         } else return null;
+    }
+
+    @Override
+    public CommandMap getCommandMap0() {
+        return Bukkit.getServer().getCommandMap();
+    }
+
+    @Override
+    public void syncCommands0() {
+        ((CraftServer) Bukkit.getServer()).syncCommands();
     }
 }

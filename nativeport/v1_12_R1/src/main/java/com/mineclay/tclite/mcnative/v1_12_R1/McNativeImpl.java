@@ -1,4 +1,4 @@
-package com.mineclay.tclite.mcnative;
+package com.mineclay.tclite.mcnative.v1_12_R1;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -6,31 +6,31 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.mineclay.tclite.mcnative.McNative;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.command.CommandMap;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class McNativePort_v1_12_R2 implements McNativePort {
+import static org.joor.Reflect.on;
+
+public class McNativeImpl implements McNative {
     @Override
-    public void sendTitle(Player player, String jsonTitle, String jsonSubtitle, int fadeIn, int keep, int fadeOut) {
+    public void sendTitle0(Player player, String jsonTitle, String jsonSubtitle, int fadeIn, int keep, int fadeOut) {
         player.sendTitle(BaseComponent.toLegacyText(ComponentSerializer.parse(jsonTitle)),
                 BaseComponent.toLegacyText(ComponentSerializer.parse(jsonSubtitle))
                 , fadeIn, keep, fadeOut);
     }
 
     @Override
-    public void sendTitle(Player player, String json) {
+    public void sendTitle0(Player player, String json) {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, createTitlePacket(EnumWrappers.TitleAction.TITLE, json));
         } catch (InvocationTargetException e) {
@@ -39,7 +39,7 @@ public class McNativePort_v1_12_R2 implements McNativePort {
     }
 
     @Override
-    public void sendSubtitle(Player player, String json) {
+    public void sendSubtitle0(Player player, String json) {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, createTitlePacket(EnumWrappers.TitleAction.SUBTITLE, json));
         } catch (InvocationTargetException e) {
@@ -48,7 +48,7 @@ public class McNativePort_v1_12_R2 implements McNativePort {
     }
 
     @Override
-    public void clearTitle(Player player) {
+    public void clearTitle0(Player player) {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, createTitlePacket(EnumWrappers.TitleAction.CLEAR, null));
         } catch (InvocationTargetException e) {
@@ -57,7 +57,7 @@ public class McNativePort_v1_12_R2 implements McNativePort {
     }
 
     @Override
-    public void resetTitle(Player player) {
+    public void resetTitle0(Player player) {
         PacketContainer packet = createTitlePacket(EnumWrappers.TitleAction.RESET, null);
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
@@ -67,7 +67,7 @@ public class McNativePort_v1_12_R2 implements McNativePort {
     }
 
     @Override
-    public void setTimes(Player player, int fadeIn, int keep, int fadeOut) {
+    public void setTimes0(Player player, int fadeIn, int keep, int fadeOut) {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, createTitlePacket(EnumWrappers.TitleAction.TIMES, null, fadeIn, keep, fadeOut));
         } catch (InvocationTargetException e) {
@@ -76,24 +76,18 @@ public class McNativePort_v1_12_R2 implements McNativePort {
     }
 
     @Override
-    public int getStateId(Player player) {
+    public int getStateId0(Player player) {
         return -1;
     }
 
     @Override
-    public int getActiveWindowId(Player player) {
-        initReflection(player);
-        try {
-            Object activeContainer = activeContainerField.get(getHandleMethod.invoke(player));
-            if (activeContainer == null) return -1;
-            return (int) windowIdField.get(activeContainer);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+    public int getActiveWindowId0(Player player) {
+        Object activeContainer = on(player).call("getHandle").get("activeContainer");
+        return on(activeContainer).get("windowId");
     }
 
     @Override
-    public void sendSlotChange(int windowId, int slot, ItemStack item, Player p) {
+    public void sendSlotChange0(int windowId, int slot, ItemStack item, Player p) {
         if (item == null) item = new ItemStack(Material.AIR);
 
         PacketContainer packet;
@@ -109,21 +103,13 @@ public class McNativePort_v1_12_R2 implements McNativePort {
         }
     }
 
-    private static Method getHandleMethod;
-    private static Field activeContainerField;
-    private static Field windowIdField;
+    @Override
+    public CommandMap getCommandMap0() {
+        return on(Bukkit.getServer()).call("getCommandMap").get();
+    }
 
-    private static void initReflection(Player playerInstance) {
-        if (getHandleMethod != null && activeContainerField != null && windowIdField != null) return;
-        try {
-            getHandleMethod = playerInstance.getClass().getDeclaredMethod("getHandle");
-            Object nmsPlayer = getHandleMethod.invoke(playerInstance);
-            activeContainerField = nmsPlayer.getClass().getDeclaredField("activeContainer");
-            windowIdField = Class.forName(activeContainerField.getGenericType().getTypeName()).getDeclaredField("windowId");
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException |
-                 ClassNotFoundException e) {
-            throw new RuntimeException("Reflection Initialize Failure", e);
-        }
+    @Override
+    public void syncCommands0() {
     }
 
     private static PacketContainer createTitlePacket(EnumWrappers.TitleAction action, String json) {

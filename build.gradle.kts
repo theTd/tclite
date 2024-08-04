@@ -53,9 +53,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":nativeport-api"))
-    implementation(project(":nativeport-v1_12_R2"))
-    implementation(project(":nativeport-v1_18_R2"))
+    api(project(":nativeport-api"))
 
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
 
@@ -77,13 +75,13 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.shadowJar {
-    archiveClassifier.set("")
-    dependencies {
-        exclude(dependency("org.jetbrains:"))
+tasks.jar {
+    val nativeports = project.subprojects.filter { it.path.startsWith(":nativeport") }
+    dependsOn(nativeports.map { it.tasks.build })
+    doFirst {
+        nativeports.map { it.tasks.jar.get().outputs.files.singleFile.absolutePath.replace("-dev.jar", ".jar") }
+            .forEach {
+                from(zipTree(file(it)))
+            }
     }
-}
-
-tasks.assemble {
-    dependsOn(tasks.shadowJar)
 }

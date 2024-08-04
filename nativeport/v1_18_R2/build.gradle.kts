@@ -18,3 +18,7 @@ dependencies {
 
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
 }
+
+tasks.assemble {
+    dependsOn("reobfJar")
+}

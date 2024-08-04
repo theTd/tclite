@@ -1,4 +1,4 @@
-package com.mineclay.tclite.mcnative;
+package com.mineclay.tclite;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
