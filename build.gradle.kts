@@ -11,6 +11,8 @@ plugins {
 
 val clayUsername: String by project
 val clayPassword: String by project
+val gprUser: String by project
+val gprKey: String by project
 
 allprojects {
     plugins.apply("java-library")
@@ -27,6 +29,7 @@ allprojects {
     tasks.compileJava {
         options.encoding = "UTF-8"
     }
+
     publishing {
         publications {
             create<MavenPublication>("default") {
@@ -35,10 +38,21 @@ allprojects {
         }
         repositories {
             val snapshot = version.toString().endsWith("-SNAPSHOT")
-            maven("https://maven.mineclay.com/repository/zhua-${if (snapshot) "snapshot" else "release"}/") {
-                credentials {
-                    username = clayUsername
-                    password = clayPassword
+            if (clayUsername.isNotEmpty()) {
+                maven("https://maven.mineclay.com/repository/zhua-${if (snapshot) "snapshot" else "release"}/") {
+                    credentials {
+                        username = clayUsername
+                        password = clayPassword
+                    }
+                }
+            }
+
+            if (gprUser.isNotEmpty()) {
+                maven("https://maven.pkg.github.com/theTd/tclite") {
+                    credentials {
+                        username = gprUser
+                        password = gprKey
+                    }
                 }
             }
         }
@@ -54,6 +68,7 @@ repositories {
 
 dependencies {
     api(project(":nativeport-api"))
+    api("com.github.cryptomorin:XSeries:11.2.0.1")
 
     compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
 
@@ -78,10 +93,10 @@ tasks.test {
 tasks.jar {
     val nativeports = project.subprojects.filter { it.path.startsWith(":nativeport") }
     dependsOn(nativeports.map { it.tasks.build })
-    doFirst {
-        nativeports.map { it.tasks.jar.get().outputs.files.singleFile.absolutePath.replace("-dev.jar", ".jar") }
-            .forEach {
-                from(zipTree(file(it)))
-            }
+
+    nativeports.map {
+        it.tasks.jar.get().outputs.files.singleFile.absolutePath.replace("-dev.jar", ".jar")
+    }.forEach {
+        from(zipTree(file(it)))
     }
 }

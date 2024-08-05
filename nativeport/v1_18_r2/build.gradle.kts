@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "1.6.3"
+    id("io.papermc.paperweight.userdev") version "1.7.2-SNAPSHOT"
 }
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))

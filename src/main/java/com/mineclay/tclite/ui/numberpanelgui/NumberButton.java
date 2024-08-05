@@ -1,6 +1,6 @@
 package com.mineclay.tclite.ui.numberpanelgui;
 
-import com.mineclay.tclite.XMaterial;
+import com.cryptomorin.xseries.XMaterial;
 import com.mineclay.tclite.ui.AbstractButton;
 import com.mineclay.tclite.ui.GUIResponse;
 import com.mineclay.tclite.ui.InventoryUtils;

@@ -1,7 +1,7 @@
 package com.mineclay.tclite.ui.structuredgui;
 
 import com.google.common.base.Preconditions;
-import com.mineclay.tclite.XMaterial;
+import com.cryptomorin.xseries.XMaterial;
 import com.mineclay.tclite.ui.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

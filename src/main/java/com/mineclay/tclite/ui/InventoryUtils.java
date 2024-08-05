@@ -1,6 +1,6 @@
 package com.mineclay.tclite.ui;
 
-import com.mineclay.tclite.XMaterial;
+import com.cryptomorin.xseries.XMaterial;
 import com.mineclay.tclite.mcnative.McNative;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

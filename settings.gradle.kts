@@ -2,7 +2,7 @@ import java.io.FileFilter
 
 pluginManagement {
     repositories {
-        mavenCentral()
+        maven("https://repo.papermc.io/repository/maven-public/")
         gradlePluginPortal()
     }
 }

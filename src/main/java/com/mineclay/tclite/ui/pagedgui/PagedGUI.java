@@ -1,6 +1,6 @@
 package com.mineclay.tclite.ui.pagedgui;
 
-import com.mineclay.tclite.XMaterial;
+import com.cryptomorin.xseries.XMaterial;
 import com.mineclay.tclite.ui.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
