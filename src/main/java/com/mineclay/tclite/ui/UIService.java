@@ -50,7 +50,6 @@ public class UIService implements Loader.Loadable, Listener {
 
     @Override
     public void load() throws Exception {
-        Bukkit.getPluginManager().registerEvents(this, plugin);
         ProtocolLibrary.getProtocolManager().addPacketListener((packetListener = new PacketAdapter(plugin, PacketType.Play.Server.OPEN_WINDOW) {
             @Override
             public void onPacketSending(PacketEvent e) {
