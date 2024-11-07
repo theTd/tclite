@@ -151,9 +151,9 @@ public class NbtUtil {
         }
         skipConstant(sb, ">");
         if (type.toString().equals("COMPOUND")) {
-            return parseCompound(sb, indent + 1);
+            return parseCompound(sb, indent);
         } else if (type.toString().equals("LIST")) {
-            return parseList(sb, indent + 1);
+            return parseList(sb, indent);
         } else {
             return parseValue(sb, type.toString());
         }
@@ -167,25 +167,25 @@ public class NbtUtil {
         for (NbtType t : NbtType.values()) {
             switch (t) {
                 case TAG_BYTE:
-                    extractors.put(t.name(), s -> NbtFactory.of("", Byte.parseByte(s)));
+                    extractors.put("BYTE", s -> NbtFactory.of("", Byte.parseByte(s)));
                     break;
                 case TAG_SHORT:
-                    extractors.put(t.name(), s -> NbtFactory.of("", Short.parseShort(s)));
+                    extractors.put("SHORT", s -> NbtFactory.of("", Short.parseShort(s)));
                     break;
                 case TAG_INT:
-                    extractors.put(t.name(), s -> NbtFactory.of("", Integer.parseInt(s)));
+                    extractors.put("INT", s -> NbtFactory.of("", Integer.parseInt(s)));
                     break;
                 case TAG_LONG:
-                    extractors.put(t.name(), s -> NbtFactory.of("", Long.parseLong(s)));
+                    extractors.put("LONG", s -> NbtFactory.of("", Long.parseLong(s)));
                     break;
                 case TAG_FLOAT:
-                    extractors.put(t.name(), s -> NbtFactory.of("", Float.parseFloat(s)));
+                    extractors.put("FLOAT", s -> NbtFactory.of("", Float.parseFloat(s)));
                     break;
                 case TAG_DOUBLE:
-                    extractors.put(t.name(), s -> NbtFactory.of("", Double.parseDouble(s)));
+                    extractors.put("DOUBLE", s -> NbtFactory.of("", Double.parseDouble(s)));
                     break;
                 case TAG_BYTE_ARRAY:
-                    extractors.put(t.name(), s -> {
+                    extractors.put("BYTE ARRAY", s -> {
                         List<Byte> l = new LinkedList<>();
                         parseArray(s, Byte::parseByte, l::add);
                         byte[] arr = new byte[l.size()];
@@ -194,7 +194,7 @@ public class NbtUtil {
                     });
                     break;
                 case TAG_INT_ARRAY:
-                    extractors.put(t.name(), s -> {
+                    extractors.put("INT ARRAY", s -> {
                         List<Integer> l = new LinkedList<>();
                         parseArray(s, Integer::parseInt, l::add);
                         int[] arr = new int[l.size()];
@@ -203,7 +203,7 @@ public class NbtUtil {
                     });
                     break;
                 case TAG_STRING:
-                    extractors.put(t.name(), s -> NbtFactory.of("", s));
+                    extractors.put("STRING", s -> NbtFactory.of("", s));
                     break;
                 case TAG_LONG_ARRAY:
                     // not supported
@@ -221,8 +221,9 @@ public class NbtUtil {
     }
 
     private static NbtBase<?> parseValue(StringBuilder sb, String type) {
+        skipConstant(sb, " ");
         StringBuilder a = new StringBuilder();
-        while (sb.charAt(0) != '\n') {
+        while (sb.length() > 0 && sb.charAt(0) != '\n') {
             a.append(sb.charAt(0));
             sb.deleteCharAt(0);
         }
@@ -235,11 +236,13 @@ public class NbtUtil {
     public static NbtCompound parseCompound(StringBuilder sb, int indent) {
         skipLn(sb);
         NbtCompound compound = NbtFactory.ofCompound("");
-        if (skipIndents(sb, indent)) {
+        while (skipIndents(sb, indent)) {
             int c = sb.indexOf(":");
+            if (c == -1)
+                throw new IllegalStateException("corrupted compound");
             String key = sb.substring(0, c);
             sb.delete(0, c + 2);
-            compound.put(key, parseFromDump(sb, indent));
+            compound.put(key, parseFromDump(sb, indent + 1));
         }
         skipLn(sb);
         return compound;
@@ -248,10 +251,10 @@ public class NbtUtil {
     public static NbtList<?> parseList(StringBuilder sb, int indent) {
         skipLn(sb);
         NbtList<Object> list = NbtFactory.ofList("");
-        if (skipIndents(sb, indent)) {
+        while (skipIndents(sb, indent)) {
             skipConstant(sb, "- ");
             //noinspection unchecked
-            list.add((NbtBase<Object>) parseFromDump(sb, indent));
+            list.add((NbtBase<Object>) parseFromDump(sb, indent + 1));
         }
         skipLn(sb);
         return list;
@@ -262,6 +265,7 @@ public class NbtUtil {
     }
 
     private static boolean skipIndents(StringBuilder sb, int indents) {
+        if (sb.length() == 0) return false;
         for (int i = 0; i < indents * 2; i++) {
             if (sb.charAt(i) != ' ') return false;
         }
@@ -270,8 +274,10 @@ public class NbtUtil {
     }
 
     private static void skipConstant(StringBuilder sb, String constant) {
-        if (!constant.chars().allMatch(i -> sb.charAt(0) == i))
-            throw new IllegalStateException("expecting constant: " + constant);
-        sb.deleteCharAt(0);
+        for (int i = 0; i < constant.length(); i++) {
+            if (sb.charAt(0) != constant.charAt(i))
+                throw new IllegalStateException("expecting constant: " + constant);
+            sb.deleteCharAt(0);
+        }
     }
 }
