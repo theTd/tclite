@@ -1,11 +1,16 @@
 package com.mineclay.tclite.mcnative;
 
+import com.comphenix.protocol.utility.MinecraftVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import org.reflections.util.ConfigurationBuilder;
 
+import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,17 +67,42 @@ class Implementation {
     final static McNative IMPL;
 
     static {
-        String pkg = Bukkit.getServer().getClass().getPackage().getName();
-        String version = pkg.substring(pkg.lastIndexOf('.') + 1);
-        String implClassName = McNative.class.getPackage().getName() + "." + version + ".McNativeImpl";
-        McNative impl = NOP;
-        try {
-            Class<? extends McNative> clazz = Class.forName(implClassName).asSubclass(McNative.class);
-            impl = clazz.newInstance();
-        } catch (Throwable e) {
-            Logger logger = JavaPlugin.getProvidingPlugin(Implementation.class).getLogger();
-            logger.log(Level.SEVERE, "failed loading McNative implementation " + implClassName, e);
+        MinecraftVersion currentVersion = MinecraftVersion.getCurrentVersion();
+        ClassLoader cl = Implementation.class.getClassLoader();
+        Class<?> preciseMatch = null;
+        for (Class<?> aClass : new Reflections(new ConfigurationBuilder()
+                .addUrls(((URLClassLoader) cl).getURLs())
+        ).get(Scanners.TypesAnnotated.of(VersionMark.class).asClass(cl))) {
+            VersionMark versionMark = aClass.getAnnotation(VersionMark.class);
+            if (versionMark.major() == currentVersion.getMajor() &&
+                    versionMark.minor() == currentVersion.getMinor() &&
+                    versionMark.build() == currentVersion.getBuild()
+            ) {
+                preciseMatch = aClass;
+            }
         }
+
+        Logger logger = JavaPlugin.getProvidingPlugin(Implementation.class).getLogger();
+        McNative impl = NOP;
+
+        if (preciseMatch != null) {
+            logger.info("Using precise match tclite implementation class " + preciseMatch.getName());
+            try {
+                impl = preciseMatch.asSubclass(McNative.class).newInstance();
+            } catch (Throwable e) {
+                logger.log(Level.SEVERE, "failed loading McNative implementation " + preciseMatch, e);
+            }
+        } else {
+            String pkg = Bukkit.getServer().getClass().getPackage().getName();
+            String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+            String implClassName = McNative.class.getPackage().getName() + "." + version + ".McNativeImpl";
+            try {
+                impl = Class.forName(implClassName).asSubclass(McNative.class).newInstance();
+            } catch (Throwable e) {
+                logger.log(Level.SEVERE, "failed loading McNative implementation " + implClassName, e);
+            }
+        }
+
         IMPL = impl;
     }
 }

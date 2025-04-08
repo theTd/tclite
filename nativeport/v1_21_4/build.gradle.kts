@@ -3,7 +3,7 @@ plugins {
     id("io.papermc.paperweight.userdev")
 }
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 
 repositories {
     // paper repo
@@ -14,9 +14,9 @@ repositories {
 
 dependencies {
     api(project(":nativeport-api"))
-    paperweight.paperDevBundle("1.18.2-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
 
-    compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
 }
 
 tasks.assemble {

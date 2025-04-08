@@ -7,6 +7,8 @@ plugins {
 
     // shadowJar
     id("com.github.johnrengelman.shadow") version "7.1.2"
+
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.14" apply false
 }
 
 val clayUsername: String by project
